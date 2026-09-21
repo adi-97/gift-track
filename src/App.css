@@ -1,0 +1,90 @@
+.fab {
+  position: fixed;
+  /* Tracks the centered content column's right edge on wide viewports
+     instead of drifting away from it toward the raw browser edge. */
+  right: max(var(--page-gutter), calc((100vw - var(--content-max-width)) / 2 + var(--page-gutter)));
+  bottom: calc(1.75rem + env(safe-area-inset-bottom));
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  color: var(--teal-contrast);
+  cursor: pointer;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+}
+
+.fab svg {
+  width: 26px;
+  height: 26px;
+}
+
+.fab--primary {
+  background: var(--teal);
+}
+
+.fab:active {
+  transform: scale(0.94);
+}
+
+.home__empty {
+  text-align: center;
+  padding: 4rem 1.5rem;
+  color: var(--ink-soft);
+}
+
+.home__empty p {
+  margin: 0.25rem 0;
+}
+
+.home__empty-sub {
+  font-size: 0.9rem;
+  color: var(--ink-faint);
+}
+
+.photo-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(10, 9, 6, 0.92);
+  display: flex;
+  flex-direction: column;
+}
+
+.photo-viewer__image {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  object-fit: contain;
+}
+
+.photo-viewer__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));
+  background: rgba(20, 17, 12, 0.75);
+}
+
+.photo-viewer__caption {
+  color: #f1e6cc;
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+}
+
+.photo-viewer__timestamp {
+  color: #c3b493;
+  font-size: 0.82rem;
+  margin-top: 0.2rem;
+}
+
+.photo-viewer__type {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: #c3b493;
+}

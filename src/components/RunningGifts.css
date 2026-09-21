@@ -1,0 +1,54 @@
+.running-gifts {
+  position: fixed;
+  inset: 0;
+  display: var(--running-gifts-display, block);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.running-gifts__lane {
+  position: absolute;
+  left: -60px;
+  display: block;
+  filter: drop-shadow(0 3px 4px rgba(15, 40, 60, 0.25));
+  animation-name: running-gift-move;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.running-gifts__lane svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  animation: running-gift-bob 0.55s ease-in-out infinite;
+}
+
+/* Horizontal drift clear across the viewport... */
+@keyframes running-gift-move {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(100vw + 120px));
+  }
+}
+
+/* ...with a little vertical hop layered on top so it reads as "running"
+   rather than just sliding. */
+@keyframes running-gift-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(4deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .running-gifts__lane,
+  .running-gifts__lane svg {
+    animation: none;
+  }
+}

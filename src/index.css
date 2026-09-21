@@ -1,0 +1,215 @@
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+
+:root {
+  /* System serif — renders instantly with no webfont download/swap,
+     which is also part of what makes first paint feel snappier. */
+  --font-heading: "Times New Roman", Times, "Liberation Serif", serif;
+  --font-ui: "Times New Roman", Times, "Liberation Serif", serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+
+  /* Light: field notebook / manila palette, on a light blue background */
+  --paper: #e3f2fa;
+  --paper-card: #cfe8f5;
+  --paper-card-tab: #b9dced;
+  --ink: #2c2418;
+  --ink-soft: #6f6046;
+  --ink-faint: #a3946f;
+  --border: #a3c9dc;
+  --teal: #1c6b66;
+  --teal-strong: #0f4f4b;
+  --teal-contrast: #f6f1e2;
+  --danger: #a1402a;
+  --danger-strong: #7f311f;
+  --shadow: 0 2px 6px rgba(44, 36, 24, 0.18), 0 1px 2px rgba(44, 36, 24, 0.12);
+  --radius-card: 14px;
+  --radius-sm: 8px;
+  /* Shared screen inset keeps headers, content grids, and floating actions
+     on one vertical rhythm at every viewport width. */
+  --page-gutter: clamp(1rem, 4vw, 1.5rem);
+  /* Caps header/grid width on tablet+ screens so content stays a readable,
+     centered column instead of hugging the top-left with empty space. */
+  --content-max-width: 760px;
+  /* Light-to-dark blue page backdrop, with a faint dot pattern on top.
+     Dark theme overrides both back to a flat fill below. */
+  --page-gradient: linear-gradient(165deg, #eef8fd 0%, #cfe9f8 28%, #9fd0e9 55%, #5aa4d6 78%, #2c6ba0 100%);
+  --page-pattern: radial-gradient(circle, rgba(255, 255, 255, 0.45) 1.5px, transparent 1.5px);
+  --page-pattern-size: 28px 28px;
+  --running-gifts-display: block;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --paper: #1c1914;
+  --paper-card: #26221b;
+  --paper-card-tab: #322c22;
+  --ink: #f1e6cc;
+  --ink-soft: #c3b493;
+  --ink-faint: #8a7b5c;
+  --border: #453d2e;
+  --teal: #3fb6ad;
+  --teal-strong: #6fd0c7;
+  --teal-contrast: #0d1f1d;
+  --danger: #e0725a;
+  --danger-strong: #f0937b;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --page-gradient: var(--paper);
+  --page-pattern: none;
+  --page-pattern-size: auto;
+  --running-gifts-display: none;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1c1914;
+    --paper-card: #26221b;
+    --paper-card-tab: #322c22;
+    --ink: #f1e6cc;
+    --ink-soft: #c3b493;
+    --ink-faint: #8a7b5c;
+    --border: #453d2e;
+    --teal: #3fb6ad;
+    --teal-strong: #6fd0c7;
+    --teal-contrast: #0d1f1d;
+    --danger: #e0725a;
+    --danger-strong: #f0937b;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
+    --page-gradient: var(--paper);
+    --page-pattern: none;
+    --page-pattern-size: auto;
+    --running-gifts-display: none;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--page-pattern), var(--page-gradient);
+  background-attachment: fixed, fixed;
+  background-size: var(--page-pattern-size, auto), auto;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
+}
+
+button,
+a,
+input,
+[role="button"],
+[role="switch"],
+[role="radio"] {
+  /* Skips the ~300ms double-tap-to-zoom delay some mobile browsers still add. */
+  touch-action: manipulation;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  color: var(--ink);
+  margin: 0;
+}
+
+button {
+  font-family: var(--font-ui);
+}
+
+a {
+  color: var(--teal);
+}
+
+.btn {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  padding: 0.65rem 1.1rem;
+  cursor: pointer;
+  transition: transform 0.05s ease, opacity 0.1s ease;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn--primary {
+  background: var(--teal);
+  color: var(--teal-contrast);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--border);
+}
+
+.btn--danger {
+  background: var(--danger);
+  color: var(--teal-contrast);
+}
+
+.stamp {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--paper-card);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: transform 0.05s ease;
+}
+
+.icon-btn:active {
+  transform: scale(0.92);
+}
+
+.card-pop-in {
+  animation: card-pop-in 0.22s ease-out both;
+  animation-delay: calc(var(--i, 0) * 35ms);
+}
+
+@keyframes card-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-pop-in {
+    animation: none;
+  }
+}
