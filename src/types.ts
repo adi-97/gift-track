@@ -10,10 +10,11 @@ export interface FieldItem {
   id: string;
   listId: string;
   number: number;
-  photoBlob: Blob;
+  photoBlob: Blob | null;
   caption: string;
   ocrText: string;
   entryType: EntryType;
+  amount?: number | null;
   createdAt: number;
 }
 

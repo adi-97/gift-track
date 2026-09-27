@@ -5,9 +5,9 @@ import { db, deleteItem, deleteList } from "../db";
 import CaptureFlow from "../components/CaptureFlow";
 import ConfirmDialog from "../components/ConfirmDialog";
 import PhotoImage from "../components/PhotoImage";
-import { IconBack, IconClose, IconPlus, IconTrash } from "../components/icons";
-import { useToast } from "../hooks/useToast";
+import { IconBack, IconClose, IconDownload, IconMoney, IconPlus, IconTrash } from "../components/icons";import { useToast } from "../hooks/useToast";
 import type { FieldItem } from "../types";
+import { formatAmount } from "../format";
 import "./ListScreen.css";
 
 function formatTimestamp(ts: number): string {
@@ -22,6 +22,7 @@ export default function ListScreen() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [capturing, setCapturing] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [pendingDeleteItem, setPendingDeleteItem] = useState<FieldItem | null>(null);
   const [confirmDeleteList, setConfirmDeleteList] = useState(false);
   const [activePhoto, setActivePhoto] = useState<FieldItem | null>(null);
@@ -50,6 +51,23 @@ export default function ListScreen() {
     showToast("Photo deleted");
   }
 
+  async function handleExport() {
+    if (!list || !items || items.length === 0 || exporting) return;
+    setExporting(true);
+    showToast("Preparing PDF…");
+    try {
+      const { exportListPdf } = await import("../exportPdf");
+      const result = await exportListPdf(list, items);
+      showToast(result === "saved" ? "PDF downloaded" : "PDF ready to share");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const cancelled = (err instanceof Error && err.name === "AbortError") || /cancel/i.test(message);
+      if (!cancelled) showToast("Couldn't export PDF");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   async function handleDeleteList() {
     if (!id) return;
     await deleteList(id);
@@ -59,36 +77,48 @@ export default function ListScreen() {
 
   return (
     <div className="list-screen">
-      <header className="list-screen__header">
-        <button
-          type="button"
-          className="icon-btn"
-          onClick={() => navigate("/")}
-          aria-label="Back to lists"
-        >
-          <IconBack />
-        </button>
-        <div className="list-screen__title-wrap">
-          <h1 className="list-screen__title">{list?.name ?? "…"}</h1>
-          <span className="stamp list-screen__count">
-            {items?.length ?? 0} item{(items?.length ?? 0) === 1 ? "" : "s"}
-          </span>
+      <header className="app-header">
+        <div className="app-header__inner">
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={() => navigate("/")}
+            aria-label="Back to lists"
+          >
+            <IconBack />
+          </button>
+          <div className="list-screen__title-wrap">
+            <h1 className="list-screen__title">{list?.name ?? "…"}</h1>
+            <span className="stamp list-screen__count">
+              {items?.length ?? 0} item{(items?.length ?? 0) === 1 ? "" : "s"}
+            </span>
+          </div>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={handleExport}
+            disabled={!items || items.length === 0 || exporting}
+            aria-label="Export as PDF"
+            title="Export as PDF"
+          >
+            <IconDownload />
+          </button>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={() => setConfirmDeleteList(true)}
+            aria-label="Delete list"
+          >
+            <IconTrash />
+          </button>
         </div>
-        <button
-          type="button"
-          className="icon-btn"
-          onClick={() => setConfirmDeleteList(true)}
-          aria-label="Delete list"
-        >
-          <IconTrash />
-        </button>
       </header>
 
       <main className="list-screen__content">
         {items && items.length === 0 && (
           <div className="home__empty">
             <p>No items yet.</p>
-            <p className="home__empty-sub">Tap the + button to add your first photo.</p>
+            <p className="home__empty-sub">Tap + to add your first entry — with or without a photo.</p>
           </div>
         )}
 
@@ -102,17 +132,27 @@ export default function ListScreen() {
               onClick={() => setActivePhoto(item)}
             >
               <span className="item-card__photo-wrap">
-                <PhotoImage
-                  blob={item.photoBlob}
-                  alt={item.caption}
-                  className="item-card__photo"
-                />
+                {item.photoBlob ? (
+                  <PhotoImage
+                    blob={item.photoBlob}
+                    alt={item.caption}
+                    className="item-card__photo"
+                  />
+                ) : (
+                  <span className="item-card__text-tile">{item.caption}</span>
+                )}
                 <span className="item-card__number stamp">#{item.number}</span>
                 <span className={`item-card__type item-card__type--${item.entryType ?? "gift"}`}>
                   {item.entryType === "cash" ? "💵" : "🎁"}
                 </span>
               </span>
               <span className="item-card__caption">{item.caption}</span>
+              {item.entryType === "cash" && item.amount != null && (
+                <span className="item-card__amount">
+                  <IconMoney className="item-card__amount-icon" />
+                  {formatAmount(item.amount)}
+                </span>
+              )}
               <span className="item-card__timestamp stamp">{formatTimestamp(item.createdAt)}</span>
             </button>
           ))}
@@ -123,14 +163,13 @@ export default function ListScreen() {
         type="button"
         className="fab fab--primary"
         onClick={() => setCapturing(true)}
-        aria-label="Add photo"
+        aria-label="Add entry"
       >
         <IconPlus />
       </button>
 
       {capturing && id && (
         <CaptureFlow
-          mode="add-item"
           listId={id}
           onDone={() => setCapturing(false)}
           onCancel={() => setCapturing(false)}
@@ -147,17 +186,27 @@ export default function ListScreen() {
           >
             <IconClose />
           </button>
-          <PhotoImage
-            blob={activePhoto.photoBlob}
-            alt={activePhoto.caption}
-            className="photo-viewer__image"
-          />
+          {activePhoto.photoBlob ? (
+            <PhotoImage
+              blob={activePhoto.photoBlob}
+              alt={activePhoto.caption}
+              className="photo-viewer__image"
+            />
+          ) : (
+            <div className="photo-viewer__text">
+              <p className="photo-viewer__text-body" onClick={(e) => e.stopPropagation()}>
+                {activePhoto.caption}
+              </p>
+            </div>
+          )}
           <div className="photo-viewer__footer" onClick={(e) => e.stopPropagation()}>
             <div>
               <div className="photo-viewer__caption">
                 #{activePhoto.number} — {activePhoto.caption}{" "}
                 <span className="photo-viewer__type">
-                  {activePhoto.entryType === "cash" ? "💵 Cash" : "🎁 Gift"}
+                  {activePhoto.entryType === "cash"
+                    ? `💵 Cash${activePhoto.amount != null ? ` · ${formatAmount(activePhoto.amount)}` : ""}`
+                    : "🎁 Gift"}
                 </span>
               </div>
               <div className="stamp photo-viewer__timestamp">

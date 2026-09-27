@@ -1,6 +1,6 @@
 .running-gifts {
   position: fixed;
-  inset: 0;
+  inset: calc(110px + env(safe-area-inset-top)) 0 0 0;
   display: var(--running-gifts-display, block);
   overflow: hidden;
   pointer-events: none;
@@ -11,10 +11,22 @@
   position: absolute;
   left: -60px;
   display: block;
-  filter: drop-shadow(0 3px 4px rgba(15, 40, 60, 0.25));
+  filter: drop-shadow(0 3px 4px var(--gift-shadow));
   animation-name: running-gift-move;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+}
+
+.running-gifts__lane--red {
+  --gift-box: #d62839;
+  --gift-box-strong: #9d1c28;
+  --gift-ribbon: #fff6d6;
+}
+
+.running-gifts__lane--blue {
+  --gift-box: #2f6fdb;
+  --gift-box-strong: #1d4aa0;
+  --gift-ribbon: #fff6d6;
 }
 
 .running-gifts__lane svg {
