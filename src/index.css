@@ -1,5 +1,7 @@
 @import "@fontsource/ibm-plex-mono/latin-400.css";
 @import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "@fontsource/poppins/latin-400.css";
+@import "@fontsource/poppins/latin-600.css";
 
 :root {
   /* System serif — renders instantly with no webfont download/swap,
@@ -7,78 +9,99 @@
   --font-heading: "Times New Roman", Times, "Liberation Serif", serif;
   --font-ui: "Times New Roman", Times, "Liberation Serif", serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --font-display: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* Light: field notebook / manila palette, on a light blue background */
-  --paper: #e3f2fa;
-  --paper-card: #cfe8f5;
-  --paper-card-tab: #b9dced;
-  --ink: #2c2418;
-  --ink-soft: #6f6046;
-  --ink-faint: #a3946f;
-  --border: #a3c9dc;
-  --teal: #1c6b66;
-  --teal-strong: #0f4f4b;
-  --teal-contrast: #f6f1e2;
+  --paper: #fff6d1;
+  --paper-card: #fffbea;
+  --paper-card-tab: #f5c518;
+  --ink: #121212;
+  --ink-soft: #4a4230;
+  --ink-faint: #8a7d55;
+  --border: #d4b24a;
+  --teal: #121212;
+  --teal-strong: #000000;
+  --teal-contrast: #f5c518;
   --danger: #a1402a;
   --danger-strong: #7f311f;
-  --shadow: 0 2px 6px rgba(44, 36, 24, 0.18), 0 1px 2px rgba(44, 36, 24, 0.12);
+  --shadow: 0 2px 6px rgba(40, 30, 0, 0.18), 0 1px 2px rgba(40, 30, 0, 0.12);
+  --gift-box: #1a1a1a;
+  --gift-box-strong: #000000;
+  --gift-ribbon: #f5c518;
+  --gift-shadow: rgba(40, 30, 0, 0.3);
+  --header-bg: #121212;
+  --header-ink: #f5c518;
+  --header-ink-soft: #d9c07a;
+  --header-rule: #f5c518;
+  --header-btn-border: rgba(245, 197, 24, 0.45);
   --radius-card: 14px;
   --radius-sm: 8px;
   /* Shared screen inset keeps headers, content grids, and floating actions
      on one vertical rhythm at every viewport width. */
   --page-gutter: clamp(1rem, 4vw, 1.5rem);
-  /* Caps header/grid width on tablet+ screens so content stays a readable,
-     centered column instead of hugging the top-left with empty space. */
-  --content-max-width: 760px;
-  /* Light-to-dark blue page backdrop, with a faint dot pattern on top.
-     Dark theme overrides both back to a flat fill below. */
-  --page-gradient: linear-gradient(165deg, #eef8fd 0%, #cfe9f8 28%, #9fd0e9 55%, #5aa4d6 78%, #2c6ba0 100%);
-  --page-pattern: radial-gradient(circle, rgba(255, 255, 255, 0.45) 1.5px, transparent 1.5px);
+  --content-max-width: 100%;
+  --page-gradient: linear-gradient(165deg, #fffbea 0%, #fff0b8 35%, #fbdc6a 70%, #f0b90b 100%);
+  --page-pattern: radial-gradient(circle, rgba(18, 18, 18, 0.07) 1.5px, transparent 1.5px);
   --page-pattern-size: 28px 28px;
   --running-gifts-display: block;
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --paper: #1c1914;
-  --paper-card: #26221b;
-  --paper-card-tab: #322c22;
-  --ink: #f1e6cc;
-  --ink-soft: #c3b493;
-  --ink-faint: #8a7b5c;
-  --border: #453d2e;
-  --teal: #3fb6ad;
-  --teal-strong: #6fd0c7;
-  --teal-contrast: #0d1f1d;
+  --paper: #0e0e0e;
+  --paper-card: #1a1a1a;
+  --paper-card-tab: #3a300c;
+  --ink: #f5ecd0;
+  --ink-soft: #c9b98a;
+  --ink-faint: #7d7155;
+  --border: #3a3222;
+  --teal: #f5c518;
+  --teal-strong: #ffd84d;
+  --teal-contrast: #121212;
   --danger: #e0725a;
   --danger-strong: #f0937b;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --gift-box: #f5c518;
+  --gift-box-strong: #c99a06;
+  --gift-ribbon: #fff3c4;
+  --gift-shadow: rgba(245, 197, 24, 0.25);
+  --header-bg: #1c1c1c;
+  --header-ink: #f5c518;
+  --header-ink-soft: #bfa760;
+  --header-rule: #8a6d0b;
+  --header-btn-border: rgba(245, 197, 24, 0.3);
   --page-gradient: var(--paper);
   --page-pattern: none;
   --page-pattern-size: auto;
-  --running-gifts-display: none;
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #1c1914;
-    --paper-card: #26221b;
-    --paper-card-tab: #322c22;
-    --ink: #f1e6cc;
-    --ink-soft: #c3b493;
-    --ink-faint: #8a7b5c;
-    --border: #453d2e;
-    --teal: #3fb6ad;
-    --teal-strong: #6fd0c7;
-    --teal-contrast: #0d1f1d;
+    --paper: #0e0e0e;
+    --paper-card: #1a1a1a;
+    --paper-card-tab: #3a300c;
+    --ink: #f5ecd0;
+    --ink-soft: #c9b98a;
+    --ink-faint: #7d7155;
+    --border: #3a3222;
+    --teal: #f5c518;
+    --teal-strong: #ffd84d;
+    --teal-contrast: #121212;
     --danger: #e0725a;
     --danger-strong: #f0937b;
-    --shadow: 0 2px 8px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
+    --gift-box: #f5c518;
+    --gift-box-strong: #c99a06;
+    --gift-ribbon: #fff3c4;
+    --gift-shadow: rgba(245, 197, 24, 0.25);
+    --header-bg: #1c1c1c;
+    --header-ink: #f5c518;
+    --header-ink-soft: #bfa760;
+    --header-rule: #8a6d0b;
+    --header-btn-border: rgba(245, 197, 24, 0.3);
     --page-gradient: var(--paper);
     --page-pattern: none;
     --page-pattern-size: auto;
-    --running-gifts-display: none;
     color-scheme: dark;
   }
 }
@@ -95,6 +118,7 @@ body,
 
 body {
   margin: 0;
+  overflow-x: hidden;
   background: var(--page-pattern), var(--page-gradient);
   background-attachment: fixed, fixed;
   background-size: var(--page-pattern-size, auto), auto;
@@ -166,6 +190,44 @@ a {
   color: var(--teal-contrast);
 }
 
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.field__input {
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--paper-card);
+  color: var(--ink);
+}
+
+.field__input--heading {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+}
+
+.field__input:disabled {
+  opacity: 0.5;
+}
+
+.field__input:focus {
+  outline: 2px solid var(--teal);
+  outline-offset: 1px;
+}
+
 .stamp {
   font-family: var(--font-mono);
   letter-spacing: 0.02em;
@@ -190,6 +252,45 @@ a {
 
 .icon-btn:active {
   transform: scale(0.92);
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--header-bg);
+  border-bottom: 3px solid var(--header-rule);
+  box-shadow: var(--shadow);
+  --gift-box: #f5c518;
+  --gift-box-strong: #c99a06;
+  --gift-ribbon: #fff3c4;
+  --gift-shadow: rgba(0, 0, 0, 0.4);
+}
+
+.app-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin-inline: auto;
+  padding: calc(1.1rem + env(safe-area-inset-top)) var(--page-gutter) 1.1rem;
+}
+
+.app-header h1,
+.app-header h2 {
+  color: var(--header-ink);
+}
+
+.app-header .icon-btn {
+  background: transparent;
+  border-color: var(--header-btn-border);
+  color: var(--header-ink);
+}
+
+.app-header .icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .card-pop-in {

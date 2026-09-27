@@ -1,0 +1,14 @@
+node_modules
+dist
+android
+ios
+assets
+public/tesseract
+public/icons
+.git
+.vscode
+.idea
+*.log
+Dockerfile
+.dockerignore
+CLAUDE.md

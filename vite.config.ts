@@ -16,8 +16,8 @@ export default defineConfig({
         start_url: "/",
         scope: "/",
         display: "standalone",
-        background_color: "#f2e7cd",
-        theme_color: "#1c6b66",
+        background_color: "#fff6d1",
+        theme_color: "#121212",
         orientation: "portrait-primary",
         icons: [
           { src: "/icons/icon-72.png", sizes: "72x72", type: "image/png" },
@@ -37,13 +37,18 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,wasm}"],
-        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
-        // The Tesseract worker + wasm core are self-hosted (see
-        // scripts/copy-tesseract-assets.mjs) and precached above. Only the
-        // language data (eng.traineddata) still comes from jsdelivr on first
-        // OCR use; cache it so OCR keeps working offline afterwards.
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        globIgnores: ["tesseract/**"],
         runtimeCaching: [
+          {
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith("/tesseract/"),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "tesseract-core",
+              expiration: { maxEntries: 4 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
           {
             urlPattern: ({ url }) => url.origin === "https://cdn.jsdelivr.net",
             handler: "CacheFirst",
@@ -60,4 +65,9 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      external: ["html2canvas", "dompurify", "canvg"],
+    },
+  },
 });

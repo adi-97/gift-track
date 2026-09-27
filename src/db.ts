@@ -41,10 +41,11 @@ export async function getListItemCount(listId: string): Promise<number> {
 
 export async function addItem(params: {
   listId: string;
-  photoBlob: Blob;
+  photoBlob: Blob | null;
   caption: string;
   ocrText: string;
   entryType: EntryType;
+  amount: number | null;
 }): Promise<FieldItem> {
   return db.transaction("rw", db.items, async () => {
     const count = await db.items.where("listId").equals(params.listId).count();
@@ -53,9 +54,10 @@ export async function addItem(params: {
       listId: params.listId,
       number: count + 1,
       photoBlob: params.photoBlob,
-      caption: params.caption.trim() || "Untitled photo",
+      caption: params.caption.trim() || (params.photoBlob ? "Untitled photo" : "Untitled entry"),
       ocrText: params.ocrText,
       entryType: params.entryType,
+      amount: params.entryType === "cash" ? params.amount : null,
       createdAt: Date.now(),
     };
     await db.items.add(item);

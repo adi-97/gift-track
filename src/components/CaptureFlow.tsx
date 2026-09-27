@@ -1,39 +1,43 @@
 import { useEffect, useState } from "react";
 import CameraView from "./CameraView";
 import PhotoImage from "./PhotoImage";
-import { addItem, createList } from "../db";
-import { recognizePhoto } from "../ocr";
+import { addItem } from "../db";
 import { useSettings } from "../hooks/useSettings";
 import { useToast } from "../hooks/useToast";
-import { IconClose } from "./icons";
+import { IconCamera, IconClose, IconMoney } from "./icons";
+import { parseAmount } from "../format";
 import type { EntryType } from "../types";
 import "./CaptureFlow.css";
 
+async function recognizePhoto(image: Blob) {
+  const ocr = await import("../ocr");
+  return ocr.recognizePhoto(image);
+}
+
 interface CaptureFlowProps {
-  mode: "new-list" | "add-item";
-  listId?: string;
-  onDone: (listId: string) => void;
+  listId: string;
+  onDone: () => void;
   onCancel: () => void;
 }
 
-type Phase = "camera" | "review";
+type Phase = "camera" | "form";
 type OcrPhase = "idle" | "reading" | "done" | "skipped" | "error";
 
-export default function CaptureFlow({ mode, listId, onDone, onCancel }: CaptureFlowProps) {
+export default function CaptureFlow({ listId, onDone, onCancel }: CaptureFlowProps) {
   const { settings } = useSettings();
   const { showToast } = useToast();
-  const [phase, setPhase] = useState<Phase>("camera");
+  const [phase, setPhase] = useState<Phase>("form");
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
   const [ocrPhase, setOcrPhase] = useState<OcrPhase>("idle");
   const [manualScanning, setManualScanning] = useState(false);
   const [ocrText, setOcrText] = useState("");
   const [caption, setCaption] = useState("");
-  const [listName, setListName] = useState("");
   const [entryType, setEntryType] = useState<EntryType>("gift");
+  const [amount, setAmount] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (phase !== "review" || !photoBlob) return;
+    if (!photoBlob) return;
 
     if (!settings.ocrEnabled) {
       setOcrPhase("skipped");
@@ -46,9 +50,7 @@ export default function CaptureFlow({ mode, listId, onDone, onCancel }: CaptureF
       .then((result) => {
         if (cancelled) return;
         setOcrText(result.fullText);
-        const best = result.bestLine || "";
-        setCaption(best);
-        if (mode === "new-list") setListName(best);
+        setCaption((current) => (current.trim() ? current : result.bestLine || ""));
         setOcrPhase("done");
       })
       .catch(() => {
@@ -60,20 +62,17 @@ export default function CaptureFlow({ mode, listId, onDone, onCancel }: CaptureF
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, photoBlob]);
+  }, [photoBlob]);
 
   function handleCapture(blob: Blob) {
     setPhotoBlob(blob);
-    setPhase("review");
+    setPhase("form");
   }
 
-  function handleRetake() {
+  function handleRemovePhoto() {
     setPhotoBlob(null);
-    setCaption("");
-    setListName("");
+    setOcrText("");
     setOcrPhase("idle");
-    setEntryType("gift");
-    setPhase("camera");
   }
 
   async function handleManualScan() {
@@ -82,9 +81,7 @@ export default function CaptureFlow({ mode, listId, onDone, onCancel }: CaptureF
     try {
       const result = await recognizePhoto(photoBlob);
       setOcrText(result.fullText);
-      const best = result.bestLine || "";
-      setCaption(best);
-      if (mode === "new-list") setListName(best);
+      setCaption(result.bestLine || "");
       setOcrPhase("done");
     } catch {
       setOcrPhase("error");
@@ -94,48 +91,77 @@ export default function CaptureFlow({ mode, listId, onDone, onCancel }: CaptureF
   }
 
   async function handleSave() {
-    if (!photoBlob || saving) return;
+    if (saving) return;
     setSaving(true);
     try {
-      const finalCaption = caption.trim() || "Untitled photo";
-      let targetListId = listId;
-      if (mode === "new-list") {
-        const list = await createList(listName.trim() || "Untitled list");
-        targetListId = list.id;
-      }
-      if (!targetListId) throw new Error("Missing list id");
+      const finalCaption = caption.trim() || (photoBlob ? "Untitled photo" : "Untitled entry");
       const item = await addItem({
-        listId: targetListId,
+        listId,
         photoBlob,
         caption: finalCaption,
         ocrText,
         entryType,
+        amount: parseAmount(amount),
       });
       showToast(`Saved #${item.number} · ${finalCaption}`);
-      onDone(targetListId);
+      onDone();
     } finally {
       setSaving(false);
     }
   }
 
   if (phase === "camera") {
-    return <CameraView onCapture={handleCapture} onClose={onCancel} />;
+    return <CameraView onCapture={handleCapture} onClose={() => setPhase("form")} />;
   }
 
   const isReading = ocrPhase === "reading";
 
   return (
     <div className="capture-review">
-      <div className="capture-review__photo-wrap">
-        {photoBlob && (
-          <PhotoImage blob={photoBlob} alt="Captured photo" className="capture-review__photo" />
-        )}
-        <button type="button" className="capture-review__close" onClick={onCancel} aria-label="Cancel">
-          <IconClose />
-        </button>
-      </div>
+      <header className="app-header">
+        <div className="app-header__inner">
+          <button type="button" className="icon-btn" onClick={onCancel} aria-label="Cancel">
+            <IconClose />
+          </button>
+          <h2 className="capture-review__title">New entry</h2>
+        </div>
+      </header>
 
-      <div className="capture-review__form">
+      <div className="capture-review__body">
+        {photoBlob ? (
+          <div className="capture-review__photo-block">
+            <div className="capture-review__photo-wrap">
+              <PhotoImage blob={photoBlob} alt="Captured photo" className="capture-review__photo" />
+            </div>
+            <div className="capture-review__photo-actions">
+              <button type="button" className="capture-review__chip" onClick={() => setPhase("camera")}>
+                Retake
+              </button>
+              <button type="button" className="capture-review__chip" onClick={handleRemovePhoto}>
+                Remove photo
+              </button>
+              <button
+                type="button"
+                className="capture-review__chip"
+                onClick={handleManualScan}
+                disabled={isReading || manualScanning}
+              >
+                {manualScanning || isReading
+                  ? "Reading text…"
+                  : ocrPhase === "done" || ocrPhase === "error"
+                  ? "Re-scan text"
+                  : "Scan text"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button type="button" className="capture-review__add-photo" onClick={() => setPhase("camera")}>
+            <IconCamera />
+            <span>Add photo</span>
+            <span className="capture-review__add-photo-hint">Optional</span>
+          </button>
+        )}
+
         {isReading && (
           <div className="capture-review__reading">
             <span className="capture-review__reading-dot" />
@@ -143,42 +169,16 @@ export default function CaptureFlow({ mode, listId, onDone, onCancel }: CaptureF
           </div>
         )}
 
-        {mode === "new-list" && (
-          <label className="field">
-            <span className="field__label">List name</span>
-            <input
-              className="field__input field__input--heading"
-              value={listName}
-              onChange={(e) => setListName(e.target.value)}
-              placeholder="Untitled list"
-              disabled={isReading}
-            />
-          </label>
-        )}
-
         <label className="field">
-          <span className="field__label">Caption</span>
-          <input
-            className="field__input field__input--heading"
+          <span className="field__label">Description</span>
+          <textarea
+            className="field__input field__input--heading capture-review__description"
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
-            placeholder="Untitled photo"
-            disabled={isReading}
+            placeholder="e.g. Silver photo frame from Aunt Meera"
+            rows={3}
           />
         </label>
-
-        <button
-          type="button"
-          className="capture-review__scan-btn"
-          onClick={handleManualScan}
-          disabled={isReading || manualScanning}
-        >
-          {manualScanning
-            ? "Reading text…"
-            : ocrPhase === "done" || ocrPhase === "error"
-            ? "Re-scan text"
-            : "Scan text"}
-        </button>
 
         <div className="field">
           <span className="field__label">Type</span>
@@ -204,19 +204,35 @@ export default function CaptureFlow({ mode, listId, onDone, onCancel }: CaptureF
           </div>
         </div>
 
-        <div className="capture-review__actions">
-          <button type="button" className="btn btn--ghost" onClick={handleRetake} disabled={saving}>
-            Retake
-          </button>
-          <button
-            type="button"
-            className="btn btn--primary"
-            onClick={handleSave}
-            disabled={isReading || saving}
-          >
-            {saving ? "Saving…" : "Save"}
-          </button>
-        </div>
+        {entryType === "cash" && (
+          <label className="field">
+            <span className="field__label">Amount (optional)</span>
+            <span className="amount-input">
+              <IconMoney className="amount-input__icon" />
+              <input
+                className="field__input amount-input__field"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value.replace(/[^\d.,]/g, ""))}
+                inputMode="decimal"
+                placeholder="0"
+              />
+            </span>
+          </label>
+        )}
+      </div>
+
+      <div className="capture-review__actions">
+        <button type="button" className="btn btn--ghost" onClick={onCancel} disabled={saving}>
+          Cancel
+        </button>
+        <button
+          type="button"
+          className="btn btn--primary"
+          onClick={handleSave}
+          disabled={isReading || saving}
+        >
+          {saving ? "Saving…" : "Save"}
+        </button>
       </div>
     </div>
   );

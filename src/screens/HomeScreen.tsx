@@ -1,11 +1,11 @@
 import { useState, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, deleteList } from "../db";
-import CaptureFlow from "../components/CaptureFlow";
+import { createList, db, deleteList } from "../db";
+import NewListDialog from "../components/NewListDialog";
 import ConfirmDialog from "../components/ConfirmDialog";
 import SettingsSheet from "../components/SettingsSheet";
-import { IconPlus, IconSettings, IconTrash } from "../components/icons";
+import { GiftLogo, IconPlus, IconSettings, IconTrash } from "../components/icons";
 import { useToast } from "../hooks/useToast";
 import type { FieldList } from "../types";
 import "./HomeScreen.css";
@@ -21,7 +21,7 @@ function formatDate(ts: number): string {
 export default function HomeScreen() {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const [capturing, setCapturing] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<FieldList | null>(null);
 
@@ -36,6 +36,12 @@ export default function HomeScreen() {
     return withCounts;
   }, []);
 
+  async function handleCreateList(name: string) {
+    const list = await createList(name);
+    setCreating(false);
+    navigate(`/list/${list.id}`);
+  }
+
   async function handleConfirmDelete() {
     if (!pendingDelete) return;
     const name = pendingDelete.name;
@@ -46,26 +52,31 @@ export default function HomeScreen() {
 
   return (
     <div className="home">
-      <header className="home__header">
-        <div>
-          <h1 className="home__title">Gift Track</h1>
-          <p className="home__subtitle">Numbered gift &amp; cash log, captured on the go</p>
+      <header className="app-header">
+        <div className="app-header__inner home__header">
+          <div className="home__brand">
+            <GiftLogo className="home__logo" />
+            <div>
+              <h1 className="home__title">Gift Track</h1>
+              <p className="home__subtitle">Numbered gift &amp; cash log, captured on the go</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Settings"
+          >
+            <IconSettings />
+          </button>
         </div>
-        <button
-          type="button"
-          className="icon-btn"
-          onClick={() => setSettingsOpen(true)}
-          aria-label="Settings"
-        >
-          <IconSettings />
-        </button>
       </header>
 
       <main className="home__content">
         {lists && lists.length === 0 && (
           <div className="home__empty">
             <p>No lists yet.</p>
-            <p className="home__empty-sub">Tap the + button to snap your first photo.</p>
+            <p className="home__empty-sub">Tap + to create your first list.</p>
           </div>
         )}
 
@@ -103,21 +114,14 @@ export default function HomeScreen() {
       <button
         type="button"
         className="fab fab--primary"
-        onClick={() => setCapturing(true)}
+        onClick={() => setCreating(true)}
         aria-label="New list"
       >
         <IconPlus />
       </button>
 
-      {capturing && (
-        <CaptureFlow
-          mode="new-list"
-          onDone={(listId) => {
-            setCapturing(false);
-            navigate(`/list/${listId}`);
-          }}
-          onCancel={() => setCapturing(false)}
-        />
+      {creating && (
+        <NewListDialog onCreate={handleCreateList} onCancel={() => setCreating(false)} />
       )}
 
       {settingsOpen && <SettingsSheet onClose={() => setSettingsOpen(false)} />}
